@@ -1,0 +1,7 @@
+vue npm i webpack demo(文件名) 
+npm i vuex --save
+ npm i less less-loader@5.0.0 -D
+ npm i stylus stylus-loader@3.0.2 -D
+npm i element-ui -S
+npm i --save axios
+npm i echatrs
