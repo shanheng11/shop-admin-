@@ -44,7 +44,7 @@
       </el-table-column>
     </el-table>
     <!-- 对话框 -->
-    <el-dialog :visible.sync="dialogVisible" @open="openFn" @close="closeFn">
+    <el-dialog :visible.sync="dialogVisible" @close="closeFn">
       <el-form label-width="100px" :model="formdata" ref="roleform">
         <el-form-item prop="specsname" label="属性名称">
           <el-input v-model="formdata.specsname"></el-input>

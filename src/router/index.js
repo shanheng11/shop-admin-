@@ -9,6 +9,7 @@ const role = ()=>import('@/pages/Role')
 const user = ()=>import('@/pages/User')
 const cate = ()=>import('@/pages/Cate')
 const specs = ()=>import('@/pages/Specs')
+const goods = ()=>import('@/pages/Goods')
 
 Vue.use(Router)
 const router =  new Router({
@@ -29,6 +30,9 @@ const router =  new Router({
       },{
         path:'user',
         component:user
+      },{
+        path:'goods',
+        component:goods
       },{
         path:'category',
         component:cate

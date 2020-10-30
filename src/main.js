@@ -20,10 +20,11 @@ Vue.prototype.$http = http;
 Vue.prototype.$api = API
 Vue.prototype.$qs = qs
 Vue.prototype.$echarts = echarts
+Vue.prototype.$domain = "http://localhost:3000";
 Vue.config.productionTip = false
 Vue.component('mytable', mytable)
 /* eslint-disable no-new */
-new Vue({   
+new Vue({
   el: '#app',
   router,
   store,
