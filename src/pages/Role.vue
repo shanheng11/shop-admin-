@@ -104,7 +104,7 @@ export default {
     async getlist() {
       let res = await this.$http.get(this.$api.ROLELIST);
       if (res.code == 200) {
-        // console.log(res);
+        console.log(this.$api.ROLELIST);
         this.rolelist = res.list ? res.list : [];
         // console.log(this.rolelist);
       } else {

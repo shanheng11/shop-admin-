@@ -46,6 +46,7 @@
         </template>
       </el-table-column>
     </el-table>
+    <!-- 分页器 -->
     <el-pagination
       background
       layout="prev, pager, next"
@@ -54,7 +55,14 @@
       @current-change="pageChange"
       :current-page="page"
     ></el-pagination>
-    <!-- 对话框 -->
+        <!-- 分页器 
+            background:设置背景
+            layout:布局
+            total:总条数
+            page-size:每一页数据量
+            current-change:当前页面发生变化触发的事件
+            current-page:当前的页数
+    -->
     <el-dialog
       :visible.sync="dialogVisible"
       @open="openFn"
@@ -97,6 +105,14 @@
           <el-input v-model="formdata.goodsname"></el-input>
         </el-form-item>
         <el-form-item label="图片">
+            <!-- 上传组件主题
+                action:自动上传的地址
+                auto-upload: 是否自动上传
+                list-type:照片墙
+                on-preview:设置预览时的 回调函数
+                on-remove:设置移除时的 回调函数
+                on-change:设置选择上传图片时的回调函数
+          -->
           <el-upload
             action="#"
             :auto-upload="false"
@@ -108,6 +124,10 @@
           >
             <i class="el-icon-plus"></i>
           </el-upload>
+          <!-- 放大图片设置 
+            visible：显示状态
+            apped-to-body:多个对话框的堆叠顺序问题
+          -->
           <el-dialog :visible.sync="previsible" append-to-body>
             <img width="100%" :src="dialogImageUrl" alt="" />
           </el-dialog>
@@ -178,14 +198,14 @@ import E from "wangeditor";
 export default {
   data() {
     return {
-      page: 1,
-      size: 2,
-      total: 0,
-      dialogVisible: false,
-      previsible: false,
-      dialogImageUrl: "",
-      goodslist: [],
-      formdata: {
+      page: 1,  //页面
+      size: 2,  //页数
+      total: 0, //总数
+      dialogVisible: false,   //对话框
+      previsible: false,  //图片放大框
+      dialogImageUrl: "", //存放图片地址
+      goodslist: [],  //商品列表
+      formdata: {     //添加数据
         first_cateid: "",
         second_cateid: "",
         goodsname: "",
@@ -199,9 +219,8 @@ export default {
         ishot: 1,
         status: 1,
       },
-      filelist: [],
-      rolelist: [],
-      rules: {
+      filelist: [], //存放图片上传文件列表
+      rules: {      //验证规则
         rolename: [
           {
             required: true,
@@ -210,19 +229,21 @@ export default {
           },
         ],
       },
-      firstlist: [],
-      secondlist: [],
-      specslist: [],
-      attrs: [],
+      firstlist: [],  //一级分类的数据
+      secondlist: [], //二级分类的数据
+      specslist: [],    //商品规格列表
+      attrs: [],    //规格属性
     };
   },
   mounted() {
+    //生命周期渲染页面
     this.getgoodslist();
   },
   methods: {
+    //编辑
     async edit(id) {
       this.dialogVisible = true;
-      let res = await this.$http.get("/api/goodsinfo", { id });
+      let res = await this.$http.get(this.$api.GOODSINFO, { id });
       if (res.code == 200) {
         this.formdata = {
           ...res.list,
@@ -233,9 +254,24 @@ export default {
       this.attrs = this.formdata.specsattr.split(",");
       this.formdata.specsattr = this.formdata.specsattr.split(",");
       this.filelist = [{ name: "", url: this.$domain + this.formdata.img }];
+      if(this.editor){
+        this.editor.txt.html(this.formdata.description); 
+      }   //进行判断，如果this.editor为true则表示文本框已经创建出来，创建完成则把请求数据重新放入文本框
     },
-    dele() {},
+    //删除
+    async dele(id) {
+        let res = await this.$http.post(this.$api.GOODSDELETE,{id})
+        if(res.code==200){
+          this.$message.success('删除成功')
+          this.page=1
+          this.getgoodslist()
+        }else{
+          this.$message.error(res.msg)
+        }
+    },
+    //图片移除
     handleremove() {},
+    //图片预览时回调，存放图片地址，并放大图片
     handlepreview(file) {
       this.dialogImageUrl = file.url;
       this.previsible = true;
@@ -244,9 +280,9 @@ export default {
       this.formdata.img = file.raw;
     },
     async getgoodslist() {
-      let res1 = await this.$http.get("/api/goodscount");
+      let res1 = await this.$http.get(this.$api.GOODSCOUNT);
       this.total = res1.list[0].total;
-      let res = await this.$http.get("/api/goodslist", {
+      let res = await this.$http.get(this.$api.GOODSLIST, {
         page: this.page,
         size: this.size,
       });
@@ -254,22 +290,23 @@ export default {
         this.goodslist = res.list;
       }
     },
-    async selectfirst(i) {
-      let res = await this.$http.get("/api/catelist", { pid: i });
+    async selectfirst(pid) {
+      let res = await this.$http.get(this.$api.CATELIST, { pid });
       if (res.code == 200) {
+        console.log(res);
         this.secondlist = res.list;
       }
     },
     async getfirstlist() {
-      let res = await this.$http.get("/api/catelist", { pid: 0 });
-      let res1 = await this.$http.get("/api/specslist");
+      let res = await this.$http.get(this.$api.CATELIST, { pid: 0 });
+      let res1 = await this.$http.get(this.$api.SPECSLIST);
       if (res.code == 200 && res1.code == 200) {
         this.specslist = res1.list;
         this.firstlist = res.list;
       }
     },
     async submit() {
-      let url = this.formdata.id ? "/api/goodsedit" : "/api/goodsadd";
+      let url = this.formdata.id ? this.$api.GOODSEDIT : this.$api.GOODSADD;
       this.formdata.specsattr = this.formdata.specsattr.join(",");
       let res = await this.$http.upload(url, this.formdata);
       if (res.code == 200) {
@@ -289,8 +326,15 @@ export default {
       this.dialogVisible = true;
     },
     openedFn() {
-      const editor = new E("#editor");
-      editor.create();
+      this.editor = new E("#editor");
+
+      // 设置监听输入操作的回调函数，newHtml ：输入的内容
+      this.editor.config.onchange = newHtml => {
+        // console.log("change 之后最新的 html", newHtml);
+        this.formdata.description = newHtml;  //先将最新的内容保存于this.formdata.description
+      };
+      this.editor.create();
+      this.editor.txt.html(this.formdata.description);  //然后将最新的内容赋值给编辑框
     },
     closeFn() {
       this.formdata = {
@@ -308,6 +352,8 @@ export default {
         status: 1,
       };
       this.filelist = [];
+      this.editor = null; //将edito内容变为空，防止每次打开都会创建一个新的编辑框
+       document.getElementById("editor").innerHTML = ""; //重置富文本编辑器的html内容
     },
     pageChange(page) {
       this.page = page;

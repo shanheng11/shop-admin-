@@ -49,6 +49,7 @@ function upload(url,data={}){
         for(let key in data){
             form.append(key,data[key])
         }
+        // console.log(form);
         axios({
             method:"post",
             url,

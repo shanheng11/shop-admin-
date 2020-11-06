@@ -7,6 +7,7 @@
     </el-breadcrumb>
     <!-- 添加按钮 -->
     <el-button type="primary" @click="addFn">添加</el-button>
+    <!-- 表格 -->
     <el-table :data="specslist">
       <!-- :data绑定的数据 
          :label列的文本标题
@@ -75,61 +76,67 @@
 export default {
   data() {
     return {
-      specslist: [],
-      dialogVisible: false,
-      formdata: {
-        specsname: "",
+      specslist: [],  //商品规格数据
+      dialogVisible: false,   //对话框，默认关闭
+      formdata: {         //表单双向绑定的数据
+        specsname: "",  
         attrs: "",
         status: true,
       },
-      arrtsarr: [{ value: "" }],
+      arrtsarr: [{ value: "" }],  //用对象方式代替数组，更改对象内容页面随之更新
     };
   },
   mounted() {
+    //点击该页面即调用该方法，渲染于页面
     this.getspecslist();
   },
   methods: {
+    //点击添加打开对话框
     addFn() {
       this.dialogVisible = true;
     },
-    async getspecslist() {
-      let res = await this.$http.get("/api/specslist");
+    //获取商品规格数据赋值给specslist
+    async getspecslist() {  
+      let res = await this.$http.get(this.$api.SPECSLIST);
       if (res.code == 200) {
         this.specslist = res.list;
-        // console.log(res.list);
       }
     },
+    //关闭对话框全部清除为原始数据
     closeFn() {
       this.formdata = {
         specsname: "",
         attrs: "",
         status: true,
       };
-      this.arrtsarr = [{ value: "" }];
+      this.arrtsarr = [{ value: "" }]; 
     },
+    //根据是否存在id进行判断是添加还是编辑
     async submit() {
-      this.formdata.attrs = this.arrtsarr.map((item) => item.value).join(",");
-      let url = this.formdata.id ? "/api/specsedit" : "/api/specsadd";
+      this.formdata.attrs = this.arrtsarr.map((item) => item.value).join(",");//把属性值转换从字符串
+      let url = this.formdata.id ? this.$api.SPECSEDIT : this.$api.SPECSADD;  //判断id是否存在
       this.formdata.status = this.formdata.status ? 1 : 2;
-      let res = await this.$http.post(url, this.formdata);
-      console.log(res);
+      let res = await this.$http.post(url, this.formdata);  
+      // console.log(res);
       if (res.code == 200) {
-        // console.log(res)
         this.$message.success("操作成功");
       } else {
         this.$message.error(res.msg);
       }
-      this.dialogVisible = false;
-      this.getspecslist();
+      this.dialogVisible = false;   
+      this.getspecslist();    //关闭对话框同时调用获取列表方法，更新渲染
     },
+    //添加属性触发，并往arrtsarr数组里面添加值
     addattr() {
       this.arrtsarr.push({ value: "" });
     },
+    //删除属性值，
     deleteattr(i) {
       this.arrtsarr.splice(i, 1);
     },
+    //根据id删除该列
     async deleteFn(id) {
-      let res = await this.$http.post("/api/specsdelete", { id });
+      let res = await this.$http.post(this.$api.SPECSDELETE, { id });
       if (res.code == 200) {
         this.$message.success("删除成功");
         this.getspecslist();
@@ -137,17 +144,17 @@ export default {
         this.$message.error(res.msg);
       }
     },
+    //编辑，同时往formdata里面添加id
     async editFn(id) {
       console.log(id);
       this.dialogVisible = true;
-      let res = await this.$http.get("/api/specsinfo", { id });
-      // this.formdata.id = res.list[0].id;
+      let res = await this.$http.get(this.$api.SPECSINFO, { id });
       if (res.code == 200) {
         this.formdata = {
           ...res.list[0],
         };
-        this.arrtsarr = res.list[0].attrs.map((item) => ({ value: item }));
-        this.formdata.status = res.list[0].status == 1 ? true : false;
+        this.arrtsarr = res.list[0].attrs.map((item) => ({ value: item })); //把从后台请求到的数据添加到数组中
+        this.formdata.status = res.list[0].status == 1 ? true : false;  //状态更改
       }
     },
   },
